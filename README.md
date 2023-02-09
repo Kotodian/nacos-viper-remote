@@ -1,4 +1,4 @@
-# Viper remote for Nacos
+# Viper remote for NacosV2
 
 Golang configuration,use to Viper reading from remote Nacos config systems. Viper remote for Naocs.
 
