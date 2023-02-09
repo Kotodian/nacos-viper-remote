@@ -2,80 +2,37 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/spf13/viper"
+
 	remote "github.com/yoyofxteam/nacos-viper-remote"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
-	config_viper := viper.New()
-	runtime_viper := config_viper
-	runtime_viper.SetConfigFile("./example_config.yaml")
-	_ = runtime_viper.ReadInConfig()
-	var option *remote.Option
-	_ = runtime_viper.Sub("yoyogo.cloud.discovery.metadata").Unmarshal(&option)
 
-	remote.SetOptions(option)
-
-	//remote.SetOptions(&remote.Option{
-	//	Url:         "localhost",
-	//	Port:        80,
-	//	NamespaceId: "public",
-	//	GroupName:   "DEFAULT_GROUP",
-	//	Config: 	 remote.Config{ DataId: "config_dev" },
-	//	Auth:        nil,
-	//})
+	err := remote.SetOptions(&remote.Option{
+		Url:         "10.43.0.12",
+		Port:        8848,
+		NamespaceId: "77b74411-f615-479e-a24e-6e848bc19121",
+		GroupName:   "JXEU-CSMS",
+		Config:      remote.Config{DataId: "jxeu-acos.properties"},
+		Auth:        &remote.Auth{Enable: true, User: "csms", Password: "FsUGjIdnXcNflJdk"},
+	})
+	if err != nil {
+		panic(err)
+	}
+	remoteViper := viper.New()
+	err = remoteViper.AddRemoteProvider("nacos", "http://10.43.0.12:8848", "")
+	if err != nil {
+		panic(err)
+	}
 	//localSetting := runtime_viper.AllSettings()
-	remote_viper := viper.New()
-	err := remote_viper.AddRemoteProvider("nacos", "localhost", "")
-	remote_viper.SetConfigType("yaml")
-	err = remote_viper.ReadRemoteConfig()
-
-	if err == nil {
-		config_viper = remote_viper
-		fmt.Println("used remote viper")
-		provider := remote.NewRemoteProvider("yaml")
-		respChan := provider.WatchRemoteConfigOnChannel(config_viper)
-
-		go func(rc <-chan bool) {
-			for {
-				<-rc
-				fmt.Printf("remote async: %s", config_viper.GetString("yoyogo.application.name"))
-			}
-		}(respChan)
-
+	remoteViper.SetConfigType("properties")
+	err = remoteViper.ReadRemoteConfig()
+	if err != nil {
+		panic(err)
 	}
+	i := remoteViper.AllKeys()
+	fmt.Println(i)
 
-	appName := config_viper.GetString("yoyogo.application.name")
-
-	fmt.Println(appName)
-
-	go func() {
-		for {
-			time.Sleep(time.Second * 30) // delay after each request
-			appName = config_viper.GetString("yoyogo.application.name")
-			fmt.Println("sync:" + appName)
-		}
-	}()
-
-	onExit()
-}
-
-func onExit() {
-	c := make(chan os.Signal)
-	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM,
-		syscall.SIGQUIT, syscall.SIGUSR1, syscall.SIGUSR2)
-
-	for s := range c {
-		switch s {
-		case syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT:
-			fmt.Println("Program Exit...", s)
-
-		default:
-			fmt.Println("other signal", s)
-		}
-	}
 }
