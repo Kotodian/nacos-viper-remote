@@ -1,7 +1,7 @@
 package nacos_viper_remote
 
 type Option struct {
-	Url         string `mapstructure:"url"`
+	Url         string `mapstructure:"url"` // Url like: 127.0.0.1,127.0.0.2
 	Port        uint64 `mapstructure:"port"`
 	NamespaceId string `mapstructure:"namespace"`
 	GroupName   string `mapstructure:"group"`

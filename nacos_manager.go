@@ -18,7 +18,7 @@ type nacosConfigManager struct {
 
 func NewNacosConfigManager(option *Option) (*nacosConfigManager, error) {
 	var serverConfigs []constant.ServerConfig
-	urls := strings.Split(option.Url, ";")
+	urls := strings.Split(option.Url, ",")
 	for _, url := range urls {
 		serverConfigs = append(serverConfigs, constant.ServerConfig{
 			ContextPath: "/nacos",
