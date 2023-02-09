@@ -9,10 +9,14 @@ import (
 
 //var nacosOptions = &Option{}
 
-func SetOptions(option *Option) {
-	manager, _ := NewNacosConfigManager(option)
+func SetOptions(option *Option) error {
+	manager, err := NewNacosConfigManager(option)
+	if err != nil {
+		return err
+	}
 	viper.SupportedRemoteProviders = []string{"nacos"}
 	viper.RemoteConfig = &remoteConfigProvider{ConfigManager: manager}
+	return nil
 }
 
 type remoteConfigProvider struct {
